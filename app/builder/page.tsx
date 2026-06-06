@@ -1,4 +1,5 @@
 'use client'
+import { useSession, signIn, signOut } from 'next-auth/react'
 
 // 'use client' tells Next.js this page runs in the browser
 // (not on the server) because it needs to react to user clicks
@@ -21,6 +22,7 @@ export default function BuilderPage() {
   const [rams, setRams] = useState<RAM[]>([])
   const [gpus, setGpus] = useState<GPU[]>([])
   const [psus, setPsus] = useState<PSU[]>([])
+  const { data: session } = useSession()
 
   // What the user has selected so far
   const [selectedCpu, setSelectedCpu] = useState<CPU | null>(null)
@@ -71,15 +73,59 @@ export default function BuilderPage() {
     selectedPsu?.price_inr,
   ].reduce((sum, p) => (sum ?? 0) + (p ?? 0), 0)
 
+  async function handleSaveBuild() {
+  if (!session?.user) return
+
+  // Need at least a CPU selected to save
+  if (!selectedCpu) {
+    alert('Select at least a CPU before saving.')
+    return
+  }
+
+  const { error } = await supabase.from('saved_builds').insert({
+    user_id: session.user.id,
+    user_email: session.user.email,
+    name: `${selectedCpu.name} Build`,
+    cpu_id: selectedCpu?.id ?? null,
+    motherboard_id: selectedMotherboard?.id ?? null,
+    ram_id: selectedRam?.id ?? null,
+    gpu_id: selectedGpu?.id ?? null,
+    psu_id: selectedPsu?.id ?? null,
+    total_price_inr: totalPrice ?? 0,
+  })
+
+  if (error) {
+    alert('Failed to save build. Try again.')
+    console.error(error)
+  } else {
+    alert('Build saved successfully!')
+  }
+}
+
   return (
     <main className="min-h-screen bg-gray-950 text-white overflow-x-hidden">
 
       {/* Navbar */}
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <a href="/" className="text-xl font-bold text-blue-400">Build-IT</a>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-          Sign in
-        </button>
+        {session ? (
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-400">{session.user?.email}</span>
+            <button
+              onClick={() => signOut()}
+              className="bg-gray-800 hover:bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            >
+              Sign out
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => signIn('google')}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            Sign in with Google
+          </button>
+        )}
       </nav>
 
       <div className="max-w-5xl mx-auto px-6 py-10">
@@ -188,6 +234,23 @@ export default function BuilderPage() {
                   <p className="text-gray-600">No parts selected yet.</p>
                 )}
               </div>
+            </div>
+
+            {/* Save build panel */}
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+              <h2 className="font-semibold mb-3">Save Build</h2>
+              {session ? (
+                <button
+                  onClick={handleSaveBuild}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  Save this build
+                </button>
+              ) : (
+                <p className="text-gray-400 text-sm">
+                  <button onClick={() => signIn('google')} className="text-blue-400 hover:underline">Sign in</button> to save your build.
+                </p>
+              )}
             </div>
 
           </div>
