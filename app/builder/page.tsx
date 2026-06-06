@@ -72,7 +72,7 @@ export default function BuilderPage() {
   ].reduce((sum, p) => (sum ?? 0) + (p ?? 0), 0)
 
   return (
-    <main className="min-h-screen bg-gray-950 text-white">
+    <main className="min-h-screen bg-gray-950 text-white overflow-x-hidden">
 
       {/* Navbar */}
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
@@ -228,7 +228,7 @@ function PartSelector<T extends { id: string }>({
         </div>
       ) : (
         <select
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-blue-500"
+          className="w-full max-w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-300 focus:outline-none focus:border-blue-500 truncate"
           onChange={e => {
             const found = options.find(o => o.id === e.target.value)
             if (found) onSelect(found)
