@@ -164,6 +164,9 @@ export default function BuilderPage() {
         {session ? (
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-400 hidden sm:block">{session.user?.email}</span>
+            <a href="/builds" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">
+              My Builds
+            </a>
             <button
               onClick={() => signOut()}
               className="border border-white/10 hover:border-white/20 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
