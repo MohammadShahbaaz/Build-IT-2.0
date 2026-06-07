@@ -5,11 +5,41 @@ import { useSession, signIn, signOut } from 'next-auth/react'
 import { supabase } from '@/lib/supabase'
 import { checkCompatibility, SelectedBuild } from '@/lib/compatibility'
 
-type CPU = { id: string; name: string; brand: string; socket: string; tdp: number; price_inr: number }
-type Motherboard = { id: string; name: string; brand: string; socket: string; chipset: string; ram_type: string; max_ram_gb: number; price_inr: number }
-type RAM = { id: string; name: string; brand: string; ram_type: string; capacity_gb: number; speed_mhz: number; price_inr: number }
-type GPU = { id: string; name: string; brand: string; tdp: number; price_inr: number }
-type PSU = { id: string; name: string; brand: string; wattage: number; rating: string; price_inr: number }
+type CPU = { id: string; name: string; brand: string; socket: string; tdp: number; price_inr: number; amazon_url?: string; flipkart_url?: string }
+type Motherboard = { id: string; name: string; brand: string; socket: string; chipset: string; ram_type: string; max_ram_gb: number; price_inr: number; amazon_url?: string; flipkart_url?: string }
+type RAM = { id: string; name: string; brand: string; ram_type: string; capacity_gb: number; speed_mhz: number; price_inr: number; amazon_url?: string; flipkart_url?: string }
+type GPU = { id: string; name: string; brand: string; tdp: number; price_inr: number; amazon_url?: string; flipkart_url?: string }
+type PSU = { id: string; name: string; brand: string; wattage: number; rating: string; price_inr: number; amazon_url?: string; flipkart_url?: string }
+
+type Part = { amazon_url?: string; flipkart_url?: string }
+
+function BuyButtons({ part }: { part: Part }) {
+  if (!part.amazon_url && !part.flipkart_url) return null
+  return (
+    <div className="flex gap-2 mt-3">
+      {part.amazon_url && (
+        <a
+          href={part.amazon_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 text-center text-xs font-semibold py-2 px-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20 transition-colors"
+        >
+          Buy on Amazon
+        </a>
+      )}
+      {part.flipkart_url && (
+        <a
+          href={part.flipkart_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 text-center text-xs font-semibold py-2 px-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20 transition-colors"
+        >
+          Buy on Flipkart
+        </a>
+      )}
+    </div>
+  )
+}
 
 export default function BuilderPage() {
   const [cpus, setCpus] = useState<CPU[]>([])
@@ -85,44 +115,44 @@ export default function BuilderPage() {
     setTimeout(() => setSaveMsg(''), 3000)
   }
 
-  const PARTS = [
-    {
-      title: 'CPU', emoji: '🖥️', color: 'cyan',
-      options: cpus, selected: selectedCpu, onSelect: setSelectedCpu,
-      getLabel: (c: CPU) => `${c.name} — ₹${c.price_inr.toLocaleString('en-IN')}`,
-      getDetail: (c: CPU) => `${c.brand} · ${c.socket} · ${c.tdp}W TDP`,
-    },
-    {
-      title: 'Motherboard', emoji: '🔌', color: 'purple',
-      options: motherboards, selected: selectedMotherboard, onSelect: setSelectedMotherboard,
-      getLabel: (m: Motherboard) => `${m.name} — ₹${m.price_inr.toLocaleString('en-IN')}`,
-      getDetail: (m: Motherboard) => `${m.brand} · ${m.socket} · ${m.chipset} · ${m.ram_type}`,
-    },
-    {
-      title: 'RAM', emoji: '💾', color: 'pink',
-      options: rams, selected: selectedRam, onSelect: setSelectedRam,
-      getLabel: (r: RAM) => `${r.name} — ₹${r.price_inr.toLocaleString('en-IN')}`,
-      getDetail: (r: RAM) => `${r.brand} · ${r.ram_type} · ${r.capacity_gb}GB · ${r.speed_mhz}MHz`,
-    },
-    {
-      title: 'GPU', emoji: '🎮', color: 'cyan',
-      options: gpus, selected: selectedGpu, onSelect: setSelectedGpu,
-      getLabel: (g: GPU) => `${g.name} — ₹${g.price_inr.toLocaleString('en-IN')}`,
-      getDetail: (g: GPU) => `${g.brand} · ${g.tdp}W TDP`,
-    },
-    {
-      title: 'PSU', emoji: '⚡', color: 'purple',
-      options: psus, selected: selectedPsu, onSelect: setSelectedPsu,
-      getLabel: (p: PSU) => `${p.name} — ₹${p.price_inr.toLocaleString('en-IN')}`,
-      getDetail: (p: PSU) => `${p.brand} · ${p.wattage}W · ${p.rating}`,
-    },
-  ]
-
   const colorMap: Record<string, string> = {
     cyan: 'border-cyan-500/30 bg-cyan-500/5 text-cyan-400',
     purple: 'border-purple-500/30 bg-purple-500/5 text-purple-400',
     pink: 'border-pink-500/30 bg-pink-500/5 text-pink-400',
   }
+
+  const PARTS = [
+    {
+      title: 'CPU', emoji: '🖥️', color: 'cyan',
+      options: cpus, selected: selectedCpu, onSelect: setSelectedCpu as (v: unknown) => void,
+      getLabel: (c: CPU) => `${c.name} — ₹${c.price_inr.toLocaleString('en-IN')}`,
+      getDetail: (c: CPU) => `${c.brand} · ${c.socket} · ${c.tdp}W TDP`,
+    },
+    {
+      title: 'Motherboard', emoji: '🔌', color: 'purple',
+      options: motherboards, selected: selectedMotherboard, onSelect: setSelectedMotherboard as (v: unknown) => void,
+      getLabel: (m: Motherboard) => `${m.name} — ₹${m.price_inr.toLocaleString('en-IN')}`,
+      getDetail: (m: Motherboard) => `${m.brand} · ${m.socket} · ${m.chipset} · ${m.ram_type}`,
+    },
+    {
+      title: 'RAM', emoji: '💾', color: 'pink',
+      options: rams, selected: selectedRam, onSelect: setSelectedRam as (v: unknown) => void,
+      getLabel: (r: RAM) => `${r.name} — ₹${r.price_inr.toLocaleString('en-IN')}`,
+      getDetail: (r: RAM) => `${r.brand} · ${r.ram_type} · ${r.capacity_gb}GB · ${r.speed_mhz}MHz`,
+    },
+    {
+      title: 'GPU', emoji: '🎮', color: 'cyan',
+      options: gpus, selected: selectedGpu, onSelect: setSelectedGpu as (v: unknown) => void,
+      getLabel: (g: GPU) => `${g.name} — ₹${g.price_inr.toLocaleString('en-IN')}`,
+      getDetail: (g: GPU) => `${g.brand} · ${g.tdp}W TDP`,
+    },
+    {
+      title: 'PSU', emoji: '⚡', color: 'purple',
+      options: psus, selected: selectedPsu, onSelect: setSelectedPsu as (v: unknown) => void,
+      getLabel: (p: PSU) => `${p.name} — ₹${p.price_inr.toLocaleString('en-IN')}`,
+      getDetail: (p: PSU) => `${p.brand} · ${p.wattage}W · ${p.rating}`,
+    },
+  ]
 
   return (
     <main className="rgb-bg min-h-screen text-white relative">
@@ -153,7 +183,6 @@ export default function BuilderPage() {
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-10">
 
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-black mb-2">
             PC <span className="text-gradient-rgb">Builder</span>
@@ -178,24 +207,27 @@ export default function BuilderPage() {
                 </div>
 
                 {part.selected ? (
-                  <div className="flex items-start justify-between gap-4 bg-white/3 rounded-xl p-4 border border-white/5">
-                    <div>
-                      <p className="font-semibold text-white">{part.getLabel(part.selected as never)}</p>
-                      <p className="text-xs text-gray-400 mt-1">{part.getDetail(part.selected as never)}</p>
+                  <div>
+                    <div className="flex items-start justify-between gap-4 bg-white/3 rounded-xl p-4 border border-white/5">
+                      <div>
+                        <p className="font-semibold text-white">{part.getLabel(part.selected as never)}</p>
+                        <p className="text-xs text-gray-400 mt-1">{part.getDetail(part.selected as never)}</p>
+                      </div>
+                      <button
+                        onClick={() => part.onSelect(null)}
+                        className="text-xs text-gray-500 hover:text-red-400 transition-colors whitespace-nowrap border border-white/10 hover:border-red-400/30 px-3 py-1 rounded-lg"
+                      >
+                        Remove
+                      </button>
                     </div>
-                    <button
-                      onClick={() => part.onSelect(null as never)}
-                      className="text-xs text-gray-500 hover:text-red-400 transition-colors whitespace-nowrap border border-white/10 hover:border-red-400/30 px-3 py-1 rounded-lg"
-                    >
-                      Remove
-                    </button>
+                    <BuyButtons part={part.selected as Part} />
                   </div>
                 ) : (
                   <select
                     className="gaming-select w-full rounded-xl px-4 py-3 text-sm"
                     onChange={e => {
                       const found = part.options.find((o: {id: string}) => o.id === e.target.value)
-                      if (found) part.onSelect(found as never)
+                      if (found) part.onSelect(found)
                     }}
                     defaultValue=""
                   >
