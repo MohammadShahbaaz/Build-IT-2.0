@@ -1,3 +1,4 @@
+'use client'
 export default function Home() {
   return (
     <main className="rgb-bg min-h-screen text-white relative">
@@ -41,9 +42,12 @@ export default function Home() {
           <a href="/builder" className="btn-primary px-8 py-4 rounded-xl text-lg font-bold w-full sm:w-auto">
             <span>Start Building Free</span>
           </a>
-          <a href="#how" className="px-8 py-4 rounded-xl text-lg font-semibold border border-white/10 hover:border-white/20 transition-colors w-full sm:w-auto text-gray-300">
+          <button
+            onClick={() => document.getElementById('how')?.scrollIntoView({ behavior: 'smooth' })}
+            className="px-8 py-4 rounded-xl text-lg font-semibold border border-white/10 hover:border-white/20 transition-colors w-full sm:w-auto text-gray-300"
+          >
             How it works
-          </a>
+          </button>
         </div>
 
         {/* Stats */}
